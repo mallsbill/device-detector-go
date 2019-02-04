@@ -119,20 +119,35 @@ var OS_FAMILIES = map[string][]string{
 	"Unknown":        []string{"UNK"},
 }
 
+const FIXTURE_FILE string = "oss.yml"
+
 type OperatingSystem struct {
-	parserAbstract Parser
+	parser Parser
 }
 
 func NewOperatingSystem(userAgent string) OperatingSystem {
-	parserAbstract := NewParser(userAgent)
+	parser := NewParser(userAgent, FIXTURE_FILE)
 
 	operatingSystem := OperatingSystem{
-		parserAbstract: parserAbstract,
+		parser: parser,
 	}
 
 	return operatingSystem
 }
 
-func Parse(o *OperatingSystem) {
+func (o *OperatingSystem) Parse() bool {
 
+	regexes := o.parser.GetRegexes()
+
+	for _, element := range regexes {
+		osRegex, _ := element.(map[interface{}]interface{})
+
+		match := o.parser.MatchUserAgent(osRegex["regex"].(string))
+
+		if match != "" {
+			break
+		}
+	}
+
+	return true
 }
