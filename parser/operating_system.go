@@ -1,5 +1,7 @@
 package parser
 
+import "fmt"
+
 var OPERATING_SYSTEMS = map[string]string{
 	"AIX": "AIX",
 	"AND": "Android",
@@ -138,15 +140,23 @@ func NewOperatingSystem(userAgent string) OperatingSystem {
 func (o *OperatingSystem) Parse() bool {
 
 	regexes := o.parser.GetRegexes()
+	matches := make([]string, 0)
 
 	for _, element := range regexes {
 		osRegex, _ := element.(map[interface{}]interface{})
 
-		match := o.parser.MatchUserAgent(osRegex["regex"].(string))
+		matches = o.parser.MatchUserAgent(osRegex["regex"].(string))
 
-		if match != "" {
+		if len(matches) > 0 {
+			fmt.Println(matches)
+			name := o.parser.BuildByMatch(osRegex["name"].(string), matches)
+			fmt.Println(name)
 			break
 		}
+	}
+
+	if len(matches) == 0 {
+		return false
 	}
 
 	return true

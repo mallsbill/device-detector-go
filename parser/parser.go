@@ -5,10 +5,17 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/smallfish/simpleyaml"
 )
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
 
 type Parser struct {
 	fixtureFile string
@@ -52,16 +59,30 @@ func getRegexesDirectory() string {
 	return regexDir
 }
 
-func (p *Parser) MatchUserAgent(regex string) string {
+func (p *Parser) MatchUserAgent(regex string) []string {
 	fullregex := "(?i)(?:^|[^A-Z0-9\\-_]|[^A-Z0-9\\-]_|sprd-)(?:" + strings.Replace(regex, "/", "\\/", -1) + ")"
 	re := regexp.MustCompile(fullregex)
-	match := re.FindString(p.userAgent)
+	matches := re.FindStringSubmatch(p.userAgent)
 
-	return match
+	return matches
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
+func (p *Parser) BuildByMatch(item string, matches []string) string {
+
+	for nb := 1; nb <= 3; nb++ {
+
+		if strings.Contains(item, "$"+strconv.Itoa(nb)) == false {
+			continue
+		}
+
+		replace := ""
+
+		if len(matches) > nb && matches[nb] != "" {
+			replace = matches[nb]
+		}
+
+		item = strings.Replace("$"+strconv.Itoa(nb), item, replace, -1)
 	}
+
+	return item
 }
