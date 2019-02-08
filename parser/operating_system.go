@@ -1,6 +1,9 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 var OPERATING_SYSTEMS = map[string]string{
 	"AIX": "AIX",
@@ -140,24 +143,67 @@ func NewOperatingSystem(userAgent string) OperatingSystem {
 func (o *OperatingSystem) Parse() bool {
 
 	regexes := o.parser.GetRegexes()
-	matches := make([]string, 0)
+	name := ""
+	short := "UNK"
+	version := ""
+	platform := ""
 
 	for _, element := range regexes {
 		osRegex, _ := element.(map[interface{}]interface{})
 
-		matches = o.parser.MatchUserAgent(osRegex["regex"].(string))
+		matches := o.parser.MatchUserAgent(osRegex["regex"].(string))
 
 		if len(matches) > 0 {
 			fmt.Println(matches)
-			name := o.parser.BuildByMatch(osRegex["name"].(string), matches)
-			fmt.Println(name)
+			name = o.parser.BuildByMatch(osRegex["name"].(string), matches)
+			version = o.parser.BuildVersion(osRegex["version"].(string), matches)
+			platform = o.parsePlatform()
 			break
 		}
 	}
 
-	if len(matches) == 0 {
+	if name == "" {
 		return false
 	}
 
+	for osShort, osName := range OPERATING_SYSTEMS {
+		if strings.ToLower(name) == strings.ToLower(osName) {
+			name = osName
+			short = osShort
+		}
+	}
+
+	family := o.GetOsFamily(short)
+
+	fmt.Println(name, short)
+	fmt.Println(version)
+	fmt.Println(platform)
+	fmt.Println(family)
+
 	return true
+}
+
+func (o *OperatingSystem) parsePlatform() string {
+	if len(o.parser.MatchUserAgent("arm")) > 0 {
+		return "ARM"
+	} else if len(o.parser.MatchUserAgent("WOW64|x64|win64|amd64|x86_64")) > 0 {
+		return "x64"
+	} else if len(o.parser.MatchUserAgent("i[0-9]86|i86pc")) > 0 {
+		return "x86"
+	}
+
+	return ""
+}
+
+func (o *OperatingSystem) GetOsFamily(osLabel string) string {
+
+	for family, labels := range OS_FAMILIES {
+		for _, label := range labels {
+			if label == osLabel {
+				return family
+			}
+		}
+	}
+
+	return "Unknown"
 }

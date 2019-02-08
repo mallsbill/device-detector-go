@@ -17,17 +17,25 @@ func check(e error) {
 	}
 }
 
+const VERSION_TRUNCATION_MAJOR int = 0
+const VERSION_TRUNCATION_MINOR int = 1
+const VERSION_TRUNCATION_PATCH int = 2
+const VERSION_TRUNCATION_BUILD int = 3
+const VERSION_TRUNCATION_NONE int = 0
+
 type Parser struct {
-	fixtureFile string
-	parserName  string
-	userAgent   string
-	regexList   []interface{}
+	fixtureFile   string
+	parserName    string
+	userAgent     string
+	regexList     []interface{}
+	maxMinorparts int
 }
 
 func NewParser(userAgent string, fixtureFile string) Parser {
 	parser := Parser{
-		userAgent:   userAgent,
-		fixtureFile: fixtureFile,
+		userAgent:     userAgent,
+		fixtureFile:   fixtureFile,
+		maxMinorparts: 1,
 	}
 
 	return parser
@@ -85,4 +93,17 @@ func (p *Parser) BuildByMatch(item string, matches []string) string {
 	}
 
 	return item
+}
+
+func (p *Parser) BuildVersion(versionString string, matches []string) string {
+
+	versionString = p.BuildByMatch(versionString, matches)
+	versionString = strings.Replace(versionString, "_", ".", -1)
+	if strings.Count(versionString, ".") > p.maxMinorparts {
+		versionParts := strings.Split(versionString, ".")
+		versionParts = versionParts[0 : p.maxMinorparts+1]
+		versionString = strings.Join(versionParts, ".")
+	}
+
+	return strings.Trim(versionString, " .")
 }
