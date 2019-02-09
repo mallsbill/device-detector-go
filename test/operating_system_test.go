@@ -13,6 +13,26 @@ func TestParseWindows(t *testing.T) {
 	if res != true {
 		t.Error("parsing result not true", res)
 	}
+
+	if o.GetName() != "Windows" {
+		t.Error("name is not equal to Windows", res)
+	}
+
+	if o.GetShort() != "WIN" {
+		t.Error("short is not equal to WIN", res)
+	}
+
+	if o.GetVersion() != "10" {
+		t.Error("version is not equal to 10", res)
+	}
+
+	if o.GetPlatform() != "x64" {
+		t.Error("platform is not equal to x64", res)
+	}
+
+	if o.GetFamily() != "Windows" {
+		t.Error("family is not equal to Windows", res)
+	}
 }
 
 func TestParseCentos(t *testing.T) {

@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -127,14 +126,24 @@ var OS_FAMILIES = map[string][]string{
 const FIXTURE_FILE string = "oss.yml"
 
 type OperatingSystem struct {
-	parser Parser
+	parser   Parser
+	name     string
+	short    string
+	version  string
+	platform string
+	family   string
 }
 
 func NewOperatingSystem(userAgent string) OperatingSystem {
 	parser := NewParser(userAgent, FIXTURE_FILE)
 
 	operatingSystem := OperatingSystem{
-		parser: parser,
+		parser:   parser,
+		name:     "",
+		short:    "UNK",
+		version:  "",
+		platform: "",
+		family:   "",
 	}
 
 	return operatingSystem
@@ -143,10 +152,6 @@ func NewOperatingSystem(userAgent string) OperatingSystem {
 func (o *OperatingSystem) Parse() bool {
 
 	regexes := o.parser.GetRegexes()
-	name := ""
-	short := "UNK"
-	version := ""
-	platform := ""
 
 	for _, element := range regexes {
 		osRegex, _ := element.(map[interface{}]interface{})
@@ -154,32 +159,25 @@ func (o *OperatingSystem) Parse() bool {
 		matches := o.parser.MatchUserAgent(osRegex["regex"].(string))
 
 		if len(matches) > 0 {
-			fmt.Println(matches)
-			name = o.parser.BuildByMatch(osRegex["name"].(string), matches)
-			version = o.parser.BuildVersion(osRegex["version"].(string), matches)
-			platform = o.parsePlatform()
+			o.name = o.parser.BuildByMatch(osRegex["name"].(string), matches)
+			o.version = o.parser.BuildVersion(osRegex["version"].(string), matches)
+			o.platform = o.parsePlatform()
 			break
 		}
 	}
 
-	if name == "" {
+	if o.name == "" {
 		return false
 	}
 
 	for osShort, osName := range OPERATING_SYSTEMS {
-		if strings.ToLower(name) == strings.ToLower(osName) {
-			name = osName
-			short = osShort
+		if strings.ToLower(o.name) == strings.ToLower(osName) {
+			o.name = osName
+			o.short = osShort
 		}
 	}
 
-	family := o.GetOsFamily(short)
-
-	fmt.Println(name, short)
-	fmt.Println(version)
-	fmt.Println(platform)
-	fmt.Println(family)
-
+	o.family = o.GetOsFamily(o.short)
 	return true
 }
 
@@ -206,4 +204,24 @@ func (o *OperatingSystem) GetOsFamily(osLabel string) string {
 	}
 
 	return "Unknown"
+}
+
+func (o *OperatingSystem) GetName() string {
+	return o.name
+}
+
+func (o *OperatingSystem) GetShort() string {
+	return o.short
+}
+
+func (o *OperatingSystem) GetVersion() string {
+	return o.version
+}
+
+func (o *OperatingSystem) GetPlatform() string {
+	return o.platform
+}
+
+func (o *OperatingSystem) GetFamily() string {
+	return o.family
 }
