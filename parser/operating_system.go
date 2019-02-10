@@ -135,7 +135,7 @@ type OperatingSystem struct {
 }
 
 func NewOperatingSystem(userAgent string) OperatingSystem {
-	parser := NewParser(userAgent, FIXTURE_FILE)
+	parser := NewParser(userAgent, FIXTURE_FILE, "os")
 
 	operatingSystem := OperatingSystem{
 		parser:   parser,
@@ -158,7 +158,7 @@ func (o *OperatingSystem) Parse() bool {
 
 		matches := o.parser.MatchUserAgent(osRegex["regex"].(string))
 
-		if len(matches) > 0 {
+		if matches != nil && len(matches) > 0 {
 			o.name = o.parser.BuildByMatch(osRegex["name"].(string), matches)
 			o.version = o.parser.BuildVersion(osRegex["version"].(string), matches)
 			o.platform = o.parsePlatform()

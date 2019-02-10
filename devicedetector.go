@@ -1,5 +1,7 @@
 package devicedetector
 
+import "github.com/mallsbill/device-detector-go/parser"
+
 const (
 	UNKNOW = "UNK"
 )
@@ -64,9 +66,16 @@ func (d *DeviceDetector) GetClient(attr interface{}) interface{} {
 }
 
 func (d *DeviceDetector) Parse() {
-
+	d.parseOs()
 }
 
 func (d *DeviceDetector) parseOs() {
+	operating_system := parser.NewOperatingSystem(d.userAgent)
+	operating_system.Parse()
+}
 
+func (d *DeviceDetector) parseClient() {
+}
+
+func (d *DeviceDetector) parseDevice() {
 }

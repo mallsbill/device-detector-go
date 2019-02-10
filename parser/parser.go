@@ -31,10 +31,11 @@ type Parser struct {
 	maxMinorparts int
 }
 
-func NewParser(userAgent string, fixtureFile string) Parser {
+func NewParser(userAgent string, fixtureFile string, parserName string) Parser {
 	parser := Parser{
 		userAgent:     userAgent,
 		fixtureFile:   fixtureFile,
+		parserName:    parserName,
 		maxMinorparts: 1,
 	}
 
@@ -106,4 +107,23 @@ func (p *Parser) BuildVersion(versionString string, matches []string) string {
 	}
 
 	return strings.Trim(versionString, " .")
+}
+
+func (p *Parser) PreMatchOverall() []string {
+	regexes := p.GetRegexes()
+
+	overAllMatch := ""
+
+	for _, element := range regexes {
+		regex, _ := element.(map[interface{}]interface{})
+
+		if overAllMatch != "" {
+			overAllMatch = regex["regex"].(string) + "|" + overAllMatch
+		} else {
+			overAllMatch = regex["regex"].(string)
+		}
+
+	}
+
+	return p.MatchUserAgent(overAllMatch)
 }
